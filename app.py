@@ -55,9 +55,9 @@ def most_active_station() -> str:
     return active_stations[0].station 
 
 
-MOST_RECENT_DATE = dt.datetime.strptime(session.query(func.max(Measurement.date)).scalar(), r"%Y-%m-%d").date()
-ONE_YEAR_PRIOR_DATE = MOST_RECENT_DATE - dt.timedelta(days=365)
-MOST_ACTIVE_STATION = most_active_station()
+most_recent_date = dt.datetime.strptime(session.query(func.max(Measurement.date)).scalar(), r"%Y-%m-%d").date()
+one_year_data = most_recent_date - dt.timedelta(days=365)
+most_active_station_constant = most_active_station()
 
 #################################################
 # Flask Setup
@@ -72,19 +72,19 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    """Starting page listing all the routes"""
+    """Landing page listing all the routes"""
     return"""
-          <h1>Welcome</h1>
-          <h2>Simple climate app of Hawaii data</h2>
-          <h3>Available routes:</h3>
+          <h1>Welcome to Module 10 Challenge</h1>
+          <h2>Climate app of Hawaii data</h2>
+          <h3>Available routes for this data:</h3>
           /api/v1.0/precipitation</br>
           /api/v1.0/stations</br>
           /api/v1.0/tobs</br>
           /api/v1.0/&lt;start&gt;</br>
           /api/v1.0/&lt;start&gt;/&lt;end&gt;</br>
           </br>
-          &lt;start&gt; and &lt;end&gt; are dates that should be in the form "YYYY-MM-DD"</br>
-          Ex: 2016-05-04
+          &lt;start&gt; and &lt;end&gt; date format should be "YYYY-MM-DD"</br>
+          Example: 2023-05-07
           """
 @app.route("/api/v1.0/precipitation")
 def precipitation():
@@ -102,7 +102,7 @@ def precipitation():
     """
     last_12_months = session.query(Measurement.date,
                                    Measurement.prcp)\
-                        .where(Measurement.date >= ONE_YEAR_PRIOR_DATE)\
+                        .where(Measurement.date >= one_year_data)\
                         .order_by(Measurement.date)\
                         .all()
     
@@ -137,8 +137,8 @@ def tobs():
     """
     most_active_tobs_data = session.query(Measurement.date,
                                           Measurement.tobs)\
-                                   .where(Measurement.date >= ONE_YEAR_PRIOR_DATE,
-                                          Measurement.station == MOST_ACTIVE_STATION)\
+                                   .where(Measurement.date >= one_year_data,
+                                          Measurement.station == most_active_station_constant)\
                                    .all()
     most_active_tobs_dict = [{item.date: item.tobs} for item in most_active_tobs_data]
     return jsonify(most_active_tobs_dict)
@@ -149,9 +149,28 @@ def start(start: str):
     :param start: string start date in YYYY-MM-DD form
     :return: json data
     """
-    data = temperature_date_range_data(start, MOST_RECENT_DATE)
+    data = temperature_date_range_data(start, most_recent_date)
     return jsonify(data)
 @app.route("/api/v1.0/<start>/<end>")
+def temperature_date_range_all_data(start: str, end=None) -> Dict[str, float]:
+    """Calculates the Min, Max, Average of temperatures from the `start` date to the end of the dataset.
+    :param start: string start date in YYYY-MM-DD form
+    :param end: string end date in YYYY-MM-DD form (default None)
+    :return: dictionary containing temperature statistics
+    """
+    if end is None:
+        end = session.query(func.max(Measurement.date)).scalar()
+    
+    temp_data = session.query(func.min(Measurement.tobs).label("TMIN"),
+                               func.max(Measurement.tobs).label("TMAX"),
+                               func.avg(Measurement.tobs).label("TAVG"))\
+                         .filter(Measurement.date >= start,
+                                 Measurement.date <= end)\
+                         .one()
+    
+    data = {"TMIN": temp_data.TMIN, "TMAX": temp_data.TMAX, "TAVG": temp_data.TAVG}
+    
+    return data
 def start_end_range(start: str, end: Union[str, dt.date]):
     """Return temperature data in the date range `start` to `end`.
 
