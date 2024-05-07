@@ -2,13 +2,16 @@
 This is the repository for Monash University Data Analytics Bootcamp Module 10 Challenge
 
 # How to use
-- 
+- Resources directory contains data source files:
+* hawaii.sqlite
+* hawaii_measurements.csv
+* hawaii_stations.csv
+
+- app.py contains the API SQLite Connection & Landing Page & Route queries
   
-- 
+- API_Static_Routes_Rubric an be used to find where the code for grading is within the app.py file FLASK API code
   
-- 
-  
--  
+-  Module_10_challange.ipynb is the main notebook for code and analysis
 
 Background:
 --------------------------------------------------------------------------------------------------------------------------------
@@ -109,3 +112,21 @@ Resources used:
 BCS Xpert Learning assistant 
 
 Office Hours
+
+https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
+
+https://stackoverflow.com/questions/46401131/simple-flask-application-not-working
+
+https://stackoverflow.com/questions/62776240/why-isnt-my-histogram-showing-on-jupyter-notebook#:~:text=1%20Answer&text=In%20the%20code%2C%20you%20are,gcf()%20or%20plt.
+
+https://mode.com/example-gallery/python_histogram
+
+https://stackoverflow.com/questions/23772165/flask-app-not-running-in-localhost?rq=3
+
+https://stackoverflow.com/questions/52965956/flask-request-is-returning-404-not-found?rq=3
+
+https://www.sitepoint.com/flask-url-routing/#:~:text=Flask%20allows%20you%20to%20create,string%20to%20your%20view%20function.
+
+https://www.geeksforgeeks.org/flask-app-routing/
+
+https://stackoverflow.com/questions/58177074/data-not-getting-comitted-to-database-in-flask-application
