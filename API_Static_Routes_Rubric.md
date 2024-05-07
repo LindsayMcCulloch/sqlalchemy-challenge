@@ -24,7 +24,7 @@ To receive all points, your Flask application must include:
 
     last_12_months = session.query(Measurement.date,
                                    Measurement.prcp)\
-                        .where(Measurement.date >= ONE_YEAR_PRIOR_DATE)\
+                        .where(Measurement.date >= one_year_data)\
                         .order_by(Measurement.date)\
                         .all()
     
@@ -66,8 +66,8 @@ To receive all points, your Flask application must include:
     """
     most_active_tobs_data = session.query(Measurement.date,
                                           Measurement.tobs)\
-                                   .where(Measurement.date >= ONE_YEAR_PRIOR_DATE,
-                                          Measurement.station == MOST_ACTIVE_STATION)\
+                                   .where(Measurement.date >= one_year_data,
+                                          Measurement.station == most_active_station_constant)\
                                    .all()
     most_active_tobs_dict = [{item.date: item.tobs} for item in most_active_tobs_data]
     return jsonify(most_active_tobs_dict)
@@ -88,12 +88,28 @@ def start(start: str):
     :param start: string start date in YYYY-MM-DD form
     :return: json data
     """
-    data = temperature_date_range_data(start, MOST_RECENT_DATE)
+    data = temperature_date_range_data(start, most_recent_date)
     return jsonify(data)
 
 * Returns the min, max, and average temperatures calculated from the given start date to the end of the dataset (4 points)
 
-********************************* 
+The below code does not work correctly and this route does not show MIN/MAX/AVG values as required and requires further error checking 
+
+def temperature_date_range_all_data(start: str, end=None) -> Dict[str, float]:
+    """Calculates the Min, Max, Average of temperatures from the `start` date to the end of the dataset.
+    :param start: string start date in YYYY-MM-DD form
+    :param end: string end date in YYYY-MM-DD form (default None)
+    :return: dictionary containing temperature statistics
+    """
+    if end is None:
+        end = session.query(func.max(Measurement.date)).scalar()
+    
+    temp_data = session.query(func.min(Measurement.tobs).label("TMIN"),
+                               func.max(Measurement.tobs).label("TMAX"),
+                               func.avg(Measurement.tobs).label("TAVG"))\
+                         .filter(Measurement.date >= start,
+                                 Measurement.date <= end)\
+                         .one()
 
 2. A start/end route that:
 
@@ -111,6 +127,8 @@ def start_end_range(start: str, end: Union[str, dt.date]):
     return jsonify(data)
 
 * Returns the min, max, and average temperatures calculated from the given start date to the given end date (6 points)
+
+The below code does not work correctly and this route does not show MIN?MAX/AVG values as required and requires further error checking 
 
 def temperature_date_range_data(start: str, end: Union[str, dt.date]) -> Dict[str, float]:
     """Calculates the Min, Max, Average of temperatures in the  date range `start` to `end`.
